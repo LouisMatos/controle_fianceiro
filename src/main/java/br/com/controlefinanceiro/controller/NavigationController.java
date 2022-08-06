@@ -26,6 +26,11 @@ public class NavigationController {
 	public String importDetails(Model model, Principal principal) {
 		return "transaction/importDetails";
 	}
+	
+	@GetMapping("transaction/analysis")
+	public String analysis(Model model, Principal principal) {
+		return "transaction/suspiciousTransactions";
+	}
 
 	@GetMapping("login")
 	public String login() {

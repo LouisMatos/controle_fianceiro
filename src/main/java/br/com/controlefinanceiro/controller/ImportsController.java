@@ -56,12 +56,12 @@ public class ImportsController {
 
 		return "redirect:/transaction/imports";
 	}
-	
+
 	@GetMapping("/details/{transaction_date}")
 	public String detalhar(@PathVariable("transaction_date") String transactionDate, RedirectAttributes redirectAttributes) {
-		
+
 		redirectAttributes.addFlashAttribute("detalhesImportacao", importsService.fetchImportDetails(transactionDate));
-		
+
 		redirectAttributes.addFlashAttribute("transacoesDetalhadas", importsService.searchTransactionsDetailedDate(transactionDate));
 		return "redirect:/transaction/importDetails";
 	}

@@ -31,12 +31,14 @@ public class AccessInterceptor extends HandlerInterceptorAdapter {
 		access.setDate(LocalDateTime.now());
 
 		try {
+
 			User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 			access.setName(user.getNome());
 			access.setId(user.getId());
 			access.setEmail(user.getEmail());
+
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.warn("Usuário não logado!");
 		}
 
 		request.setAttribute("hits", access);

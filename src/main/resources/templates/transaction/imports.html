@@ -22,6 +22,7 @@ $(document).ready(function(){
 	});
 	
 	
+	
 
 	$(document)
 			.ready(
@@ -84,9 +85,9 @@ $(document).ready(function(){
 </head>
 <body>
 
-	<div layout:fragment="content">
-	<div class="container">
-		<form method="POST" th:action="@{/imports/upload/file}" enctype="multipart/form-data">
+	<div layout:fragment="content" >
+	<div class="container" >
+		<form method="POST" th:action="@{/imports/upload/file}" enctype="multipart/form-data" >
 			<div class="form-group">
 				<h3 class="mb-2 mt-2  text-center">Importar Transações</h3>
 				<label for="arquivo"></label>
