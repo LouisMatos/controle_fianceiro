@@ -5,12 +5,25 @@
 	layout:decorate="~{fragments/layout}">
 <head>
 <script type="text/javascript">
+
+
 	$(document).ready(function() {
 		$(function() {
 			$('#data_analisar').datetimepicker({
 
 				format : 'MM/YYYY'
 			});
+		});
+
+		$(".alert-dismissible").fadeTo(2000, 500).slideUp(500, function() {
+			$(".alert-dismissible").alert('close');
+		});
+
+		$('#arquivo').on('change', function() {
+			//get the file name
+			var fileName = $(this).val();
+			//replace the "Choose a file" label
+			$(this).next('.custom-file-label').html(fileName);
 		});
 
 	});
@@ -175,7 +188,7 @@
 
 		<div class="container">
 
-			<form method="POST" th:action="@{/upload/transacao/analisar}">
+			<form method="POST" th:action="@{/imports/transaction/analysis/suspicious}">
 
 				<h3 class="mb-2 mt-2  text-center">Análise de Transações
 					Suspeitas</h3>
@@ -185,7 +198,11 @@
 						placeholder="Selecione o mês e o Ano para analisar as transações"
 						id="data_analisar" name="data_analisar">
 				</div>
-
+				
+				<div class="alert alert-danger alert-dismissible fade show"
+					id="error" th:if="${messageError}" role="alert">
+					<span th:text="${messageError}"></span>
+				</div>
 
 				<div class="form-group">
 					<button name="submit" type="submit" class="btn btn-primary">Realizar
@@ -193,7 +210,7 @@
 				</div>
 			</form>
 
-
+			
 			<hr>
 
 			<div class="form-group">

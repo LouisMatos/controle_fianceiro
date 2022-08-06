@@ -66,4 +66,22 @@ public class ImportsController {
 		return "redirect:/transaction/importDetails";
 	}
 
+	@PostMapping("/transaction/analysis/suspicious")
+	public String analisar(@RequestParam("data_analisar") String analysisDate, RedirectAttributes redirectAttributes) {
+		
+		if (analysisDate.isEmpty()) {
+			redirectAttributes.addFlashAttribute("messageError", "Selecione uma data para seguir com a análise!");
+			return "redirect:/transaction/analysis";
+		}else {
+			redirectAttributes.addFlashAttribute("transacoesSuspeitas", importsService.analisarTransacoesSuspeitasData(analysisDate));
+			
+			redirectAttributes.addFlashAttribute("contasSuspeitas", importsService.analyzeSuspiciousAccounts(analysisDate));
+
+			redirectAttributes.addFlashAttribute("agenciasSuspeitas", importsService.analisarAgenciasSuspeitas(analysisDate));
+		}
+			
+		
+		
+		return "redirect:/transaction/analysis";
+	}
 }

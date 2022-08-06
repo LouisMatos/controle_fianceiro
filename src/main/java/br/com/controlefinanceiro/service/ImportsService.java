@@ -19,8 +19,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import br.com.controlefinanceiro.model.AccountDTO;
+import br.com.controlefinanceiro.model.AgencyDTO;
 import br.com.controlefinanceiro.model.ImportDetailsDTO;
 import br.com.controlefinanceiro.model.ImportPerformedDTO;
+import br.com.controlefinanceiro.model.SuspectedAgency;
+import br.com.controlefinanceiro.model.SuspiciousAccount;
 import br.com.controlefinanceiro.model.Transaction;
 import br.com.controlefinanceiro.model.User;
 import br.com.controlefinanceiro.repository.FileRepository;
@@ -121,6 +125,105 @@ public class ImportsService {
 	public List<Transaction> searchTransactionsDetailedDate(String transactionDate) {
 		return fileRepository.findByDetailedTransactionDate(transactionDate);
 	}
+	
+	public List<Transaction> analisarTransacoesSuspeitasData(String analysisDate) {
+		List<Transaction> transactions = fileRepository.findByDetailedTransactionDate(handleSurveyDate(analysisDate));
+
+		List<Transaction> suspiciousTransactions = new ArrayList<Transaction>();
+
+		for (Transaction transaction : transactions) {
+			if (transaction.getValorTransacao().compareTo(new BigDecimal("100000.00")) >= 0) {
+				suspiciousTransactions.add(transaction);
+			}
+		}
+
+		return suspiciousTransactions;
+	}
+	
+	public  ArrayList<SuspiciousAccount> analyzeSuspiciousAccounts(String analysisDate) {
+		ArrayList<SuspiciousAccount> suspiciousAccounts = new ArrayList<SuspiciousAccount>();
+
+		// Aqui estou verificando as contas suspeitas de origem,quer dizer que estão
+		// mandando valores suspeitos, então vai virar valores de saida no front(SAIDA)
+		List<AccountDTO> originAccounts = fileRepository.findAllAgencyAndAccountOrigin(handleSurveyDate(analysisDate));
+
+		for (AccountDTO conta : originAccounts) {
+			SuspiciousAccount suspiciousAccount = new SuspiciousAccount();
+			suspiciousAccount.setBanco(conta.getBanco());
+			suspiciousAccount.setAgencia(conta.getAgencia());
+			suspiciousAccount.setConta(conta.getConta());
+			suspiciousAccount.setValorSuspeito(String.valueOf(fileRepository.getAmountSuspiciousTransactionsOrigin(
+					handleSurveyDate(analysisDate), conta.getConta(), conta.getAgencia(), conta.getBanco())));
+			suspiciousAccount.setTipoMovimentacao("SAIDA");
+			if (!suspiciousAccount.getValorSuspeito().equals("null")) {
+				suspiciousAccounts.add(suspiciousAccount);
+//				System.out.println(contaSuspeita.toString());
+			}
+		}
+
+		// Aqui estou verificando as contas suspeitas de destino,quer dizer que estão
+		// recebendo valores suspeitos, então vai virar valores de Entrada no
+		// front(Entrada)
+		List<AccountDTO> destinyAccounts = fileRepository.findAllAgencyAndAccountDestination(handleSurveyDate(analysisDate));
+
+		for (AccountDTO conta : destinyAccounts) {
+
+			SuspiciousAccount suspiciousAccount = new SuspiciousAccount();
+			suspiciousAccount.setBanco(conta.getBanco());
+			suspiciousAccount.setAgencia(conta.getAgencia());
+			suspiciousAccount.setConta(conta.getConta());
+			suspiciousAccount.setValorSuspeito(String.valueOf(fileRepository.getValueSuspiciousTransactionsOutput(
+					handleSurveyDate(analysisDate), conta.getConta(), conta.getAgencia(), conta.getBanco())));
+			suspiciousAccount.setTipoMovimentacao("ENTRADA");
+			if (!suspiciousAccount.getValorSuspeito().equals("null")) {
+				suspiciousAccounts.add(suspiciousAccount);
+//				System.out.println(contaSuspeita.toString());
+			}
+
+		}
+
+		return suspiciousAccounts;
+	}
+	
+	
+	public ArrayList<SuspectedAgency> analisarAgenciasSuspeitas(String analysisDate) {
+
+		ArrayList<SuspectedAgency> suspectedAgencies = new ArrayList<SuspectedAgency>();
+
+		List<AgencyDTO> agencyOrigin = fileRepository.findAllAgencyOrigin(handleSurveyDate(analysisDate));
+
+		for (AgencyDTO agency : agencyOrigin) {
+			SuspectedAgency suspectedAgency = new SuspectedAgency();
+			suspectedAgency.setAgencia(agency.getAgencia());
+			suspectedAgency.setBanco(agency.getBanco());
+			suspectedAgency.setTipoMovimentacao("SAIDA");
+			suspectedAgency.setValorSuspeito(String.valueOf(fileRepository.getValueAgencySuspectsOrigin(
+					handleSurveyDate(analysisDate), agency.getAgencia(), agency.getBanco())));
+
+			if (!suspectedAgency.getValorSuspeito().equals("null")) {
+				suspectedAgencies.add(suspectedAgency);
+
+			}
+		}
+
+		List<AgencyDTO> agencyDestination = fileRepository.findAllDestinationAgency(handleSurveyDate(analysisDate));
+
+		for (AgencyDTO agency : agencyDestination) {
+			SuspectedAgency suspectedAgency = new SuspectedAgency();
+			suspectedAgency.setAgencia(agency.getAgencia());
+			suspectedAgency.setBanco(agency.getBanco());
+			suspectedAgency.setTipoMovimentacao("ENTRADA");
+			suspectedAgency.setValorSuspeito(String.valueOf(fileRepository.getValueAgencySuspectsDestination(
+					handleSurveyDate(analysisDate), agency.getAgencia(), agency.getBanco())));
+
+			if (!suspectedAgency.getValorSuspeito().equals("null")) {
+				suspectedAgencies.add(suspectedAgency);
+
+			}
+		}
+
+		return suspectedAgencies;
+	}
 
 	private Transaction convertTransactionToObject(CSVRecord csvRecord, User user2) {
 		Transaction transaction = new Transaction();
@@ -158,6 +261,15 @@ public class ImportsService {
 			}
 		}
 		return true;
-	}	
+	}
+
+	private String handleSurveyDate(String analysisDate) {
+
+		String dataSplit[] = analysisDate.split("/");
+
+		return dataSplit[1] + "-" + dataSplit[0];
+	}
+
+	
 
 }
