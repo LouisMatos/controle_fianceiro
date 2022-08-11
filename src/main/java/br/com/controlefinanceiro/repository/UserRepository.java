@@ -19,7 +19,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
 	@Cacheable("findAllUser")
 	@Query(value = "SELECT u.id, u.nome, u.email FROM usuarios u WHERE status = true", nativeQuery = true)
-	List<RegisteredUsersDTO> findUsuariosCadastrados();
+	List<RegisteredUsersDTO> findRegisteredUsers();
 
 	Optional<User> findByEmailAndSenha(String email, String senha);
 }

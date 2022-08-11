@@ -31,6 +31,16 @@ public class NavigationController {
 	public String analysis(Model model, Principal principal) {
 		return "transaction/suspiciousTransactions";
 	}
+	
+	@GetMapping("user/register")
+	public String register(Model model, Principal principal) {
+		return "user/register";
+	}
+	
+	@GetMapping("user/list")
+	public String list() {
+		return "/user/list";
+	}
 
 	@GetMapping("login")
 	public String login() {

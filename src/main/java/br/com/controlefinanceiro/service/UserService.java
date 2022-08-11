@@ -7,6 +7,8 @@ import java.util.Optional;
 
 import javax.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,31 +23,36 @@ import br.com.controlefinanceiro.util.Utils;
 
 @Service
 public class UserService {
+	
+	private static Logger Log = LoggerFactory.getLogger(UserService.class);
 
 	@Autowired
-	private UserRepository usuarioRepository;
+	private UserRepository userRepository;
 
 	@Autowired
 	private EnviarEmail sendEmail;
 
-	public List<RegisteredUsersDTO> buscarUsersCadastrados() {
-		return usuarioRepository.findUsuariosCadastrados();
+	public List<RegisteredUsersDTO> searchForRegisteredUsers() {
+		List<RegisteredUsersDTO> user =  userRepository.findRegisteredUsers();
+		
+		Log.info(user.toString());
+		return user;
 	}
 
-	public boolean verificaEmailExiste(UserDTO usuarioDTO) {
-		if (usuarioRepository.findByEmail(usuarioDTO.getEmail().toUpperCase()).isPresent()) {
+	public boolean emailAlreadyRegistered(UserDTO userDTO) {
+		if (userRepository.findByEmail(userDTO.getEmail().toUpperCase()).isPresent()) {
 			return true;
 		}
 		return false;
 	}
 
-	public void criarNovoUser(@Valid UserDTO usuarioDTO) {
+	public void createNewUser(@Valid UserDTO userDTO) {
 
-		usuarioDTO.setSenha(Utils.getRandomNumberString());
+		userDTO.setSenha(Utils.getRandomNumberString());
 
 		User usuario = new User();
-		usuario.setEmail(usuarioDTO.getEmail().toUpperCase());
-		usuario.setNome(usuarioDTO.getNome());
+		usuario.setEmail(userDTO.getEmail().toUpperCase());
+		usuario.setNome(userDTO.getNome());
 		List<Paper> papeis = new ArrayList<Paper>();
 		Paper papel = new Paper();
 		papel.setNome(EnumModule.USUARIO);
@@ -53,32 +60,32 @@ public class UserService {
 		usuario.setPapeis(papeis);
 		usuario.setCadastro(LocalDateTime.now());
 		usuario.setStatus(true);
-		usuario.setSenha(Utils.encrypt(usuarioDTO.getSenha()));
+		usuario.setSenha(Utils.encrypt(userDTO.getSenha()));
 
-		sendEmail.enviarEmail(usuarioDTO);
-		usuarioRepository.save(usuario).getId();
+		//sendEmail.enviarEmail(userDTO);
+		userRepository.save(usuario).getId();
 
 	}
 
 	public Optional<User> buscarUser(String email) {
-		return usuarioRepository.findByEmail(email);
+		return userRepository.findByEmail(email);
 	}
 
 	public Optional<User> buscarUserPorId(Integer id) {
-		return usuarioRepository.findById(id);
+		return userRepository.findById(id);
 	}
 
 	public Optional<User> verificaEmailESenha(String login, String senha) {
-		return usuarioRepository.findByEmailAndSenha(login, senha);
+		return userRepository.findByEmailAndSenha(login, senha);
 	}
 
 	public boolean excluirUserDoSistema(Integer id) {
-		Optional<User> usuario = usuarioRepository.findById(id);
+		Optional<User> usuario = userRepository.findById(id);
 
 		if (usuario.isPresent()) {
 			User usuarioBD = usuario.get();
 			usuarioBD.setStatus(false);
-			usuarioRepository.save(usuarioBD);
+			userRepository.save(usuarioBD);
 			return true;
 		} else {
 			return false;
@@ -87,7 +94,7 @@ public class UserService {
 	}
 
 	public boolean verificaUserAdministradorSistema(Integer id) {
-		Optional<User> usuario = usuarioRepository.findById(id);
+		Optional<User> usuario = userRepository.findById(id);
 		if (usuario.get().getNome().equalsIgnoreCase("Admin")
 				&& usuario.get().getEmail().equalsIgnoreCase("admin@email.com.br")) {
 			return true;
@@ -96,7 +103,7 @@ public class UserService {
 	}
 
 	public void editarUser(@Valid UserDTO usuarioDTO) {
-		User usuario = usuarioRepository.findById(usuarioDTO.getId()).get();
+		User usuario = userRepository.findById(usuarioDTO.getId()).get();
 
 		usuario.setEmail(usuarioDTO.getEmail().toUpperCase());
 		usuario.setNome(usuarioDTO.getNome());
@@ -105,7 +112,7 @@ public class UserService {
 			usuario.setSenha(Utils.encrypt(Utils.getRandomNumberString()));
 		}
 
-		usuarioRepository.save(usuario);
+		userRepository.save(usuario);
 		sendEmail.enviarEmail(usuarioDTO);
 	}
 
