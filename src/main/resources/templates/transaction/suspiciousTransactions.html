@@ -188,7 +188,8 @@
 
 		<div class="container">
 
-			<form method="POST" th:action="@{/imports/transaction/analysis/suspicious}">
+			<form method="POST"
+				th:action="@{/imports/transaction/analysis/suspicious}">
 
 				<h3 class="mb-2 mt-2  text-center">Análise de Transações
 					Suspeitas</h3>
@@ -198,7 +199,7 @@
 						placeholder="Selecione o mês e o Ano para analisar as transações"
 						id="data_analisar" name="data_analisar">
 				</div>
-				
+
 				<div class="alert alert-danger alert-dismissible fade show"
 					id="error" th:if="${messageError}" role="alert">
 					<span th:text="${messageError}"></span>
@@ -210,7 +211,7 @@
 				</div>
 			</form>
 
-			
+
 			<hr>
 
 			<div class="form-group">

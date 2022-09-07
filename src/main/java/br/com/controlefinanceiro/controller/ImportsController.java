@@ -18,23 +18,27 @@ import br.com.controlefinanceiro.service.ImportsService;
 @Controller
 @RequestMapping("/imports")
 public class ImportsController {
+	
+	private static final String REDIRECT_TRANSACTION_IMPORTS = "redirect:/transaction/imports";
 
+	private static final String MESSAGE_ERROR = "messageError";
+	
 	@Autowired
 	private ImportsService importsService;
 
 	@GetMapping
 	public String loadTransactions(RedirectAttributes redirectAttributes) {
 		redirectAttributes.addFlashAttribute("importacoesRealizadas", importsService.findPerformedImports());
-		return "redirect:/transaction/imports";
+		return REDIRECT_TRANSACTION_IMPORTS;
 	}
 
 	@PostMapping("/upload/file")
 	public String singleFileUpload(@RequestParam("arquivo") MultipartFile file, RedirectAttributes redirectAttributes) {
 
 		if (file.isEmpty()) {
-			redirectAttributes.addFlashAttribute("messageError",
+			redirectAttributes.addFlashAttribute(MESSAGE_ERROR,
 					"Arquivo vazio ou selecione um arquivo para fazer upload!");
-			return "redirect:/transaction/imports";
+			return REDIRECT_TRANSACTION_IMPORTS;
 		}
 
 		importsService.fileInfos(file);
@@ -49,12 +53,12 @@ public class ImportsController {
 					"Você carregou o arquivo '" + file.getOriginalFilename() + "' com sucesso!");
 			redirectAttributes.addFlashAttribute("importacoesRealizadas", importsService.findPerformedImports());
 		} catch (SQLIntegrityConstraintViolationException e) {
-			redirectAttributes.addFlashAttribute("messageError",
+			redirectAttributes.addFlashAttribute(MESSAGE_ERROR,
 					"As transações já foram processadas e registradas no sitema para o dia informado!");
-			return "redirect:/transaction/imports";
+			return REDIRECT_TRANSACTION_IMPORTS;
 		}
 
-		return "redirect:/transaction/imports";
+		return REDIRECT_TRANSACTION_IMPORTS;
 	}
 
 	@GetMapping("/details/{transaction_date}")
@@ -70,7 +74,7 @@ public class ImportsController {
 	public String analisar(@RequestParam("data_analisar") String analysisDate, RedirectAttributes redirectAttributes) {
 		
 		if (analysisDate.isEmpty()) {
-			redirectAttributes.addFlashAttribute("messageError", "Selecione uma data para seguir com a análise!");
+			redirectAttributes.addFlashAttribute(MESSAGE_ERROR, "Selecione uma data para seguir com a análise!");
 			return "redirect:/transaction/analysis";
 		}else {
 			redirectAttributes.addFlashAttribute("transacoesSuspeitas", importsService.analisarTransacoesSuspeitasData(analysisDate));

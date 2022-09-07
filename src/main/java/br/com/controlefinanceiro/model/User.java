@@ -25,7 +25,7 @@ public class User implements UserDetails {
 	private static final long serialVersionUID = 1L;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
 	private Integer id;
 
 	@NotEmpty
@@ -37,13 +37,13 @@ public class User implements UserDetails {
 	@NotEmpty
 	private String email;
 
-	private Boolean status;
+	private boolean status;
 
 	@DateTimeFormat(pattern = "dd/MM/yyyy")
 	private LocalDateTime cadastro;
 
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "usuario", fetch = FetchType.LAZY)
-	private List<Transaction> transacoes;
+	private List<Transaction> Transactions;
 
 	@OneToMany(mappedBy = "usuario", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	private List<Paper> papeis;
@@ -115,7 +115,7 @@ public class User implements UserDetails {
 		this.email = email;
 	}
 
-	public Boolean getStatus() {
+	public boolean getStatus() {
 		return status;
 	}
 

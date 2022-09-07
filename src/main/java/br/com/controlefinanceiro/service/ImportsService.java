@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -34,7 +35,7 @@ import groovy.util.logging.Slf4j;
 @Service
 public class ImportsService {
 
-	private static Logger Log = LoggerFactory.getLogger(ImportsService.class);
+	private static Logger log = LoggerFactory.getLogger(ImportsService.class);
 	
 	@Autowired
 	private FileRepository fileRepository;
@@ -47,29 +48,29 @@ public class ImportsService {
 	
 
 	public List<ImportPerformedDTO> findPerformedImports() {
-		Log.info("Carregando as Importações realizadas!");
+		log.info("Carregando as Importações realizadas!");
 		return fileRepository.findTransactionDateImportDate();
 	}
 	
 	public void fileInfos(MultipartFile file) {
 		double bytess = file.getSize();
 		double kilobytes = (bytess / 1024);
-		BigDecimal bigDecimal = new BigDecimal((kilobytes / 1024));
+		BigDecimal bigDecimal = BigDecimal.valueOf((kilobytes / 1024));
 
-		Log.info("Nome do Arquivo: {}", file.getOriginalFilename());
-		Log.info("Tamanho do Arquivo: {}", bigDecimal.setScale(5, BigDecimal.ROUND_UP) + " MB");
+		log.info("Nome do Arquivo: {}", file.getOriginalFilename());
+		log.info("Tamanho do Arquivo: {}", bigDecimal.setScale(5, BigDecimal.ROUND_UP) + " MB");
 	}
 
 	@SuppressWarnings("resource")
 	public void readFile(MultipartFile file) {
 		try {
-			BufferedReader fileReader = new BufferedReader(new InputStreamReader(file.getInputStream(), "UTF-8"));
+			BufferedReader fileReader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8));
 			CSVParser csvParser;
 			csvParser = new CSVParser(fileReader, CSVFormat.EXCEL);
 			Iterable<CSVRecord> csvRecords = csvParser.getRecords();
 
 			for (CSVRecord csvRecord : csvRecords) {
-				Log.info(csvRecord.toString());
+				log.info(csvRecord.toString());
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -80,7 +81,7 @@ public class ImportsService {
 	@SuppressWarnings("resource")
 	public void processTransactions(MultipartFile file, Object session) {
 		try {
-			BufferedReader fileReader = new BufferedReader(new InputStreamReader(file.getInputStream(), "UTF-8"));
+			BufferedReader fileReader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8));
 			CSVParser csvParser;
 			csvParser = new CSVParser(fileReader, CSVFormat.EXCEL);
 			Iterable<CSVRecord> csvRecords = csvParser.getRecords();
@@ -91,7 +92,7 @@ public class ImportsService {
 
 			for (CSVRecord csvRecord : csvRecords) {
 
-				Transaction transaction = convertTransactionToObject(csvRecord, user);
+				Transaction transaction = convertTransactionToObject(csvRecord);
 
 				if (csvRecord.getRecordNumber() == 1) {
 					dateFirstLine = LocalDateTime.parse(csvRecord.get(7));
@@ -112,7 +113,7 @@ public class ImportsService {
 	public void saveBankTransaction() throws SQLIntegrityConstraintViolationException {
 		if (fileRepository.findByDateTransaction(dateFirstLine.toLocalDate()) == 0) {
 			fileRepository.saveAll(transactions);
-			Log.info("Transações salvas nos banco: {}", transactions.toString());
+			log.info("Transações salvas nos banco");
 		} else {
 			throw new SQLIntegrityConstraintViolationException();
 		}
@@ -129,7 +130,7 @@ public class ImportsService {
 	public List<Transaction> analisarTransacoesSuspeitasData(String analysisDate) {
 		List<Transaction> transactions = fileRepository.findByDetailedTransactionDate(handleSurveyDate(analysisDate));
 
-		List<Transaction> suspiciousTransactions = new ArrayList<Transaction>();
+		List<Transaction> suspiciousTransactions = new ArrayList<>();
 
 		for (Transaction transaction : transactions) {
 			if (transaction.getValorTransacao().compareTo(new BigDecimal("100000.00")) >= 0) {
@@ -140,8 +141,8 @@ public class ImportsService {
 		return suspiciousTransactions;
 	}
 	
-	public  ArrayList<SuspiciousAccount> analyzeSuspiciousAccounts(String analysisDate) {
-		ArrayList<SuspiciousAccount> suspiciousAccounts = new ArrayList<SuspiciousAccount>();
+	public  List<SuspiciousAccount> analyzeSuspiciousAccounts(String analysisDate) {
+		ArrayList<SuspiciousAccount> suspiciousAccounts = new ArrayList<>();
 
 		// Aqui estou verificando as contas suspeitas de origem,quer dizer que estão
 		// mandando valores suspeitos, então vai virar valores de saida no front(SAIDA)
@@ -157,7 +158,6 @@ public class ImportsService {
 			suspiciousAccount.setTipoMovimentacao("SAIDA");
 			if (!suspiciousAccount.getValorSuspeito().equals("null")) {
 				suspiciousAccounts.add(suspiciousAccount);
-//				System.out.println(contaSuspeita.toString());
 			}
 		}
 
@@ -177,18 +177,15 @@ public class ImportsService {
 			suspiciousAccount.setTipoMovimentacao("ENTRADA");
 			if (!suspiciousAccount.getValorSuspeito().equals("null")) {
 				suspiciousAccounts.add(suspiciousAccount);
-//				System.out.println(contaSuspeita.toString());
 			}
-
 		}
-
 		return suspiciousAccounts;
 	}
 	
 	
-	public ArrayList<SuspectedAgency> analisarAgenciasSuspeitas(String analysisDate) {
+	public List<SuspectedAgency> analisarAgenciasSuspeitas(String analysisDate) {
 
-		ArrayList<SuspectedAgency> suspectedAgencies = new ArrayList<SuspectedAgency>();
+		ArrayList<SuspectedAgency> suspectedAgencies = new ArrayList<>();
 
 		List<AgencyDTO> agencyOrigin = fileRepository.findAllAgencyOrigin(handleSurveyDate(analysisDate));
 
@@ -225,7 +222,7 @@ public class ImportsService {
 		return suspectedAgencies;
 	}
 
-	private Transaction convertTransactionToObject(CSVRecord csvRecord, User user2) {
+	private Transaction convertTransactionToObject(CSVRecord csvRecord) {
 		Transaction transaction = new Transaction();
 
 		transaction.setBancoOrigem(csvRecord.get(0));
@@ -257,7 +254,7 @@ public class ImportsService {
 					return false;
 				}
 			} catch (IllegalArgumentException | IllegalAccessException ex) {
-				System.out.println(ex);
+				log.error(String.valueOf(ex));
 			}
 		}
 		return true;
@@ -265,7 +262,7 @@ public class ImportsService {
 
 	private String handleSurveyDate(String analysisDate) {
 
-		String dataSplit[] = analysisDate.split("/");
+		String[] dataSplit = analysisDate.split("/");
 
 		return dataSplit[1] + "-" + dataSplit[0];
 	}

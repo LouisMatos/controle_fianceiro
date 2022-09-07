@@ -8,4 +8,5 @@ public interface RegisteredUsersDTO {
 
 	public String getEmail();
 
+	
 }

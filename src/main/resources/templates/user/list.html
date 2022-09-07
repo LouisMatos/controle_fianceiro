@@ -21,6 +21,18 @@
 			parent.location.replace("/usuario/editar/" + usuario);
 		}
 	}
+	
+	function carregarPagina(usuario){
+		
+		 if(usuario.isEmpty()){
+			 parent.location.replace("/users/list");
+	      }else{
+	    	  alert('Test');
+	     }
+		
+		//alert(usuario);
+		
+	}
 
 // 	$(document).ready(function() {
 // 		parent.location.replace("/users/list");
@@ -67,9 +79,32 @@
 </script>
 
 </head>
-<body>
+
+
+
+<!-- <div th:if="${#lists.isEmpty(usuarios)}"> -->
+<!-- 	<body th:onload="|carregarPagina(${usuarios});|"> -->
+<!-- </div> -->
+<!-- <div th:unless="${#lists.isEmpty(usuarios)}"> -->
+	
+<!-- <body> -->
+<!-- </div> -->
+
+
+
+	
+
 
 	<div layout:fragment="content">
+
+<div th:if="${#lists.isEmpty(usuarios)}">
+<!-- <body th:onload="|carregarPagina(${usuarios});|"></body> -->
+	<script>
+		$(document).ready(function() {
+			 parent.location.replace("/users/list");
+		});
+	</script>
+</div>
 
 		<hr>
 		<div class="container">

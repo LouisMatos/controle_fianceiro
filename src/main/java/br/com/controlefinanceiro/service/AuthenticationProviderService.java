@@ -52,11 +52,13 @@ public class AuthenticationProviderService implements AuthenticationProvider{
 
 	private boolean usuarioAtivo(User usuario) {
 		if (usuario != null) {
-			if (usuario.getStatus() == true) {
+			if (Boolean.TRUE.equals(usuario.getStatus())) {
 				return true;
+			}else {
+				throw new BadCredentialsException("Este usuário está desativado.");
 			}
 		}
-		throw new BadCredentialsException("Este usuário está desativado.");
+		return false;
 	}
 
 }

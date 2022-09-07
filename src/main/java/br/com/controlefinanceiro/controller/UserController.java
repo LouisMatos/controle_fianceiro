@@ -23,7 +23,7 @@ public class UserController {
 	@GetMapping("/list")
 	public String loadTransactions(RedirectAttributes redirectAttributes) {
 		redirectAttributes.addFlashAttribute("usuarios", userService.searchForRegisteredUsers());
-		return "redirect:/user/list";
+		return "user/list";
 	}
 
 	@PostMapping("/newUser")

@@ -14,17 +14,17 @@ import org.springframework.stereotype.Service;
 
 import br.com.controlefinanceiro.enums.EnumModule;
 import br.com.controlefinanceiro.model.Paper;
+import br.com.controlefinanceiro.model.RegisteredUsersDTO;
 import br.com.controlefinanceiro.model.User;
 import br.com.controlefinanceiro.model.UserDTO;
-import br.com.controlefinanceiro.model.RegisteredUsersDTO;
 import br.com.controlefinanceiro.repository.UserRepository;
 import br.com.controlefinanceiro.util.EnviarEmail;
 import br.com.controlefinanceiro.util.Utils;
 
 @Service
 public class UserService {
-	
-	private static Logger Log = LoggerFactory.getLogger(UserService.class);
+
+	private static Logger log = LoggerFactory.getLogger(UserService.class);
 
 	@Autowired
 	private UserRepository userRepository;
@@ -33,10 +33,9 @@ public class UserService {
 	private EnviarEmail sendEmail;
 
 	public List<RegisteredUsersDTO> searchForRegisteredUsers() {
-		List<RegisteredUsersDTO> user =  userRepository.findRegisteredUsers();
-		
-		Log.info(user.toString());
-		return user;
+		List<RegisteredUsersDTO> users = userRepository.findRegisteredUsers();
+		findUsersLogs(users);
+		return users;
 	}
 
 	public boolean emailAlreadyRegistered(UserDTO userDTO) {
@@ -53,7 +52,7 @@ public class UserService {
 		User usuario = new User();
 		usuario.setEmail(userDTO.getEmail().toUpperCase());
 		usuario.setNome(userDTO.getNome());
-		List<Paper> papeis = new ArrayList<Paper>();
+		List<Paper> papeis = new ArrayList<>();
 		Paper papel = new Paper();
 		papel.setNome(EnumModule.USUARIO);
 		papeis.add(papel);
@@ -62,7 +61,7 @@ public class UserService {
 		usuario.setStatus(true);
 		usuario.setSenha(Utils.encrypt(userDTO.getSenha()));
 
-		//sendEmail.enviarEmail(userDTO);
+		sendEmail.enviarEmail(userDTO);
 		userRepository.save(usuario).getId();
 
 	}
@@ -98,22 +97,35 @@ public class UserService {
 		if (usuario.get().getNome().equalsIgnoreCase("Admin")
 				&& usuario.get().getEmail().equalsIgnoreCase("admin@email.com.br")) {
 			return true;
+		} else {
+			return false;
 		}
-		return false;
 	}
 
 	public void editarUser(@Valid UserDTO usuarioDTO) {
-		User usuario = userRepository.findById(usuarioDTO.getId()).get();
+		Optional<User> user = userRepository.findById(usuarioDTO.getId());
 
-		usuario.setEmail(usuarioDTO.getEmail().toUpperCase());
-		usuario.setNome(usuarioDTO.getNome());
+		if (user.isPresent()) {
+			
+			user.get().setEmail(usuarioDTO.getEmail().toUpperCase());
+			user.get().setNome(usuarioDTO.getNome());
 
-		if (usuarioDTO.isSenhaNova()) {
-			usuario.setSenha(Utils.encrypt(Utils.getRandomNumberString()));
+			if (usuarioDTO.isSenhaNova()) {
+				user.get().setSenha(Utils.encrypt(Utils.getRandomNumberString()));
+			}
+			
+			userRepository.save(user.get());
+			sendEmail.enviarEmail(usuarioDTO);
 		}
 
-		userRepository.save(usuario);
-		sendEmail.enviarEmail(usuarioDTO);
+	}
+
+	private void findUsersLogs(List<RegisteredUsersDTO> users) {
+		for (RegisteredUsersDTO registeredUsersDTO : users) {
+			log.info("ID : {} Nome: {} Email: {}", registeredUsersDTO.getId(), registeredUsersDTO.getNome(),
+					registeredUsersDTO.getEmail());
+		}
+
 	}
 
 }

@@ -39,7 +39,7 @@ public class NavigationController {
 	
 	@GetMapping("user/list")
 	public String list() {
-		return "/user/list";
+		return "user/list";
 	}
 
 	@GetMapping("login")

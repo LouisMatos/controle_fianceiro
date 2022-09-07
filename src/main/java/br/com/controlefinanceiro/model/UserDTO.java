@@ -1,5 +1,12 @@
 package br.com.controlefinanceiro.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class UserDTO {
 
 	private Integer id;

@@ -20,7 +20,7 @@ import br.com.controlefinanceiro.model.User;
 public class AccessInterceptor extends HandlerInterceptorAdapter {
 	private static final Logger log = LogManager.getLogger(AccessInterceptor.class);
 
-	public List<Access> hits = new ArrayList<Access>();
+	private final List<Access> hits = new ArrayList<>();
 
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
@@ -52,6 +52,6 @@ public class AccessInterceptor extends HandlerInterceptorAdapter {
 		Access access = (Access) request.getAttribute("hits");
 		access.setDuration(Duration.between(access.getDate(), LocalDateTime.now()));
 		hits.add(access);
-		log.info("Logs de acessos: " + access);
+		log.info("Logs de acessos: {}", access);
 	}
 }
