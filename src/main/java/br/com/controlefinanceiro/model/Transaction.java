@@ -1,5 +1,6 @@
 package br.com.controlefinanceiro.model;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -14,7 +15,9 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "Transaction")
-public class Transaction {
+public class Transaction implements Serializable {
+
+	private static final long serialVersionUID = -7563356195254421558L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

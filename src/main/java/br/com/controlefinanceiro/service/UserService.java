@@ -39,10 +39,7 @@ public class UserService {
 	}
 
 	public boolean emailAlreadyRegistered(UserDTO userDTO) {
-		if (userRepository.findByEmail(userDTO.getEmail().toUpperCase()).isPresent()) {
-			return true;
-		}
-		return false;
+		return userRepository.findByEmail(userDTO.getEmail().toUpperCase()).isPresent();
 	}
 
 	public void createNewUser(@Valid UserDTO userDTO) {
@@ -94,26 +91,31 @@ public class UserService {
 
 	public boolean verificaUserAdministradorSistema(Integer id) {
 		Optional<User> usuario = userRepository.findById(id);
-		if (usuario.get().getNome().equalsIgnoreCase("Admin")
-				&& usuario.get().getEmail().equalsIgnoreCase("admin@email.com.br")) {
-			return true;
+		if (usuario.isPresent()) {
+			if (usuario.get().getNome().equalsIgnoreCase("Admin")
+					&& usuario.get().getEmail().equalsIgnoreCase("admin@email.com.br")) {
+				return true;
+			} else {
+				return false;
+			}
 		} else {
 			return false;
 		}
+
 	}
 
 	public void editarUser(@Valid UserDTO usuarioDTO) {
 		Optional<User> user = userRepository.findById(usuarioDTO.getId());
 
 		if (user.isPresent()) {
-			
+
 			user.get().setEmail(usuarioDTO.getEmail().toUpperCase());
 			user.get().setNome(usuarioDTO.getNome());
 
 			if (usuarioDTO.isSenhaNova()) {
 				user.get().setSenha(Utils.encrypt(Utils.getRandomNumberString()));
 			}
-			
+
 			userRepository.save(user.get());
 			sendEmail.enviarEmail(usuarioDTO);
 		}

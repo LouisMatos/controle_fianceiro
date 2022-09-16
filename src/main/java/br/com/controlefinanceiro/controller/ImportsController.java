@@ -53,8 +53,7 @@ public class ImportsController {
 					"Você carregou o arquivo '" + file.getOriginalFilename() + "' com sucesso!");
 			redirectAttributes.addFlashAttribute("importacoesRealizadas", importsService.findPerformedImports());
 		} catch (SQLIntegrityConstraintViolationException e) {
-			redirectAttributes.addFlashAttribute(MESSAGE_ERROR,
-					"As transações já foram processadas e registradas no sitema para o dia informado!");
+			redirectAttributes.addFlashAttribute(MESSAGE_ERROR, "As transações já foram processadas e registradas no sitema para o dia informado!");
 			return REDIRECT_TRANSACTION_IMPORTS;
 		}
 

@@ -22,7 +22,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Table(name = "usuarios")
 public class User implements UserDetails {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 14083574343926986L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
@@ -43,7 +43,7 @@ public class User implements UserDetails {
 	private LocalDateTime cadastro;
 
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "usuario", fetch = FetchType.LAZY)
-	private List<Transaction> Transactions;
+	private List<Transaction> transactions;
 
 	@OneToMany(mappedBy = "usuario", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	private List<Paper> papeis;
@@ -131,11 +131,11 @@ public class User implements UserDetails {
 		this.cadastro = cadastro;
 	}
 
-	public List getPapeis() {
+	public List<Paper> getPapeis() {
 		return papeis;
 	}
 
-	public void setPapeis(List papeis) {
+	public void setPapeis(List<Paper> papeis) {
 		this.papeis = papeis;
 	}
 
