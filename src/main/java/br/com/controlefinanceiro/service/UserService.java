@@ -91,17 +91,18 @@ public class UserService {
 
 	public boolean verificaUserAdministradorSistema(Integer id) {
 		Optional<User> usuario = userRepository.findById(id);
+		boolean isAdmin;
 		if (usuario.isPresent()) {
 			if (usuario.get().getNome().equalsIgnoreCase("Admin")
 					&& usuario.get().getEmail().equalsIgnoreCase("admin@email.com.br")) {
-				return true;
+				isAdmin = true;
 			} else {
-				return false;
+				isAdmin = false;
 			}
 		} else {
-			return false;
+			isAdmin = false;
 		}
-
+		return isAdmin;
 	}
 
 	public void editarUser(@Valid UserDTO usuarioDTO) {

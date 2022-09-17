@@ -56,7 +56,7 @@ public class ImportsService {
 		BigDecimal bigDecimal = BigDecimal.valueOf((kilobytes / 1024));
 
 		log.info("Nome do Arquivo: {}", file.getOriginalFilename());
-		log.info("Tamanho do Arquivo: {}", (bigDecimal.setScale(5, BigDecimal.ROUND_UP) + " MB"));
+		log.info("Tamanho do Arquivo: {} MB", (bigDecimal.setScale(5, BigDecimal.ROUND_UP)));
 	}
 
 	@SuppressWarnings("resource")
@@ -69,7 +69,8 @@ public class ImportsService {
 			Iterable<CSVRecord> csvRecords = csvParser.getRecords();
 
 			for (CSVRecord csvRecord : csvRecords) {
-				log.info("Line: {}", csvRecord.toString());
+				String csvLine = csvRecord.toString();
+				log.info("Line: {}", csvLine);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
